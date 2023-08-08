@@ -13,3 +13,5 @@ Then add the reactions, each optionally followed by a rate (in this case, 10):
 Try the examples for a graphical demonstration!
 
 `$ cargo run --release --example sto`
+
+![gui demo](media/1691519892.png)
