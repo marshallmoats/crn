@@ -6,7 +6,7 @@ authors = ["Marshall Moats <marshallmoats@gmail.com>"]
 homepage = "https://github.com/marshallmoats/crn"
 respository = "https://github.com/marshallmoats/crn"
 description = "Stochastic and deterministic simulation of chemical reaction networks."
-categories = ["simulation", "chemistry", "mathematics"]
+categories = ["simulation", "science", "mathematics", "algorithms"]
 license = "MIT"
 
 [dependencies]
