@@ -7,8 +7,7 @@ homepage = "https://github.com/marshallmoats/crn"
 respository = "https://github.com/marshallmoats/crn"
 description = "Stochastic and deterministic simulation of chemical reaction networks."
 categories = ["simulation", "chemistry", "mathematics"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
 
 [dependencies]
 bimap = "0.6.3"
