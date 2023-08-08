@@ -1,5 +1,7 @@
 # crn
 
+![Crates.io](https://img.shields.io/crates/v/crn)
+
 `crn` can simulate both stochastic and deterministic CRNs with `StoCrn` and `DetCrn`, respectively.
 
 To create your own CRN, first declare the initial counts of each molecule:
