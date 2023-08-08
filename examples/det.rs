@@ -89,7 +89,6 @@ impl App for CrnApp {
         CentralPanel::default().show(ctx, |ui| {
             ui.checkbox(&mut self.state.relative, "Relative");
             if ui.button("Resimulate").clicked() {
-                // println!("{:?}", self.crn.names);
                 self.crn.reset();
                 let new_data = self
                     .crn
@@ -101,7 +100,6 @@ impl App for CrnApp {
                 .error
                 .as_ref()
                 .map(|e| ui.label(format!("Error: {:?}", e)));
-            // ui.label(format!("Error: {:?}", self.state.error));
 
             let mut input = self.state.simulation_length.to_string();
             ui.text_edit_singleline(&mut input);

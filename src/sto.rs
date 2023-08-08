@@ -81,7 +81,7 @@ impl StoCrn {
 
         if steps > MAX_POINTS {
             let ratio = steps / MAX_POINTS;
-            println!("ratio: {}", ratio);
+            // println!("ratio: {}", ratio);
             for i in 0..steps {
                 if i % ratio == 0 {
                     for (j, s) in self.state.species.iter().enumerate() {
@@ -109,31 +109,6 @@ impl StoCrn {
 
         Ok(res)
     }
-
-    // pub fn simulate_data(
-    //     &mut self,
-    //     steps: usize,
-    //     relative: bool,
-    // ) -> Result<Vec<Vec<(f64, f64)>>, error::Error> {
-    //     let hist = self.simulate_history(steps)?;
-
-    //     Ok((0..self.state.species.len())
-    //         .map(|i| {
-    //             hist.iter()
-    //                 .map(|state| {
-    //                     // apparently this gets optimized heavily
-    //                     // seems like it only checks relative once
-    //                     if relative {
-    //                         let total = state.species.iter().sum::<i32>() as f64;
-    //                         (state.time, state.species[i] as f64 / total)
-    //                     } else {
-    //                         (state.time, state.species[i] as f64)
-    //                     }
-    //                 })
-    //                 .collect::<Vec<(f64, f64)>>()
-    //         })
-    //         .collect())
-    // }
 }
 
 impl ToString for StoCrn {

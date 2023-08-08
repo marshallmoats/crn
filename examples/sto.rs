@@ -115,7 +115,7 @@ impl App for CrnApp {
                     }
                 });
             if ui.button("Resimulate").clicked() {
-                println!("{:?}", self.crn.names);
+                // println!("{:?}", self.crn.names);
                 self.crn.reset();
                 let new_data = self.crn.simulate_history(self.state.simulation_length);
                 match new_data {
@@ -143,12 +143,6 @@ impl App for CrnApp {
 
 impl CrnApp {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
-        // Restore app state using cc.storage (requires the "persistence" feature).
-        // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
-        // for e.g. egui::PaintCallback.
-        // catalyst transformations
-
         Self {
             lp: LinePlot {
                 ..Default::default()

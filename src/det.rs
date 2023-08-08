@@ -51,7 +51,7 @@ impl DetCrn {
             vec![Vec::with_capacity(steps.min(MAX_POINTS)); self.state.species.len()];
         for j in 0..steps {
             if j % ratio == 0 {
-                println!("{j}");
+                // println!("{j}");
                 for (i, s) in self.state.species.iter().enumerate() {
                     species[i].push((self.state.time, *s));
                 }
