@@ -6,19 +6,17 @@ use egui::{
 
 use crn::{presets, StoCrn};
 
-lazy_static::lazy_static! {
-    pub static ref CRN_LIST: Vec<StoCrn> = vec![
-        presets::MULTIPLY_CATALYZED,
-        presets::ROCK_PAPER_SCISSORS,
-        presets::PREDATOR_PREY,
-        presets::POLYA,
-        presets::RPSLS,
-        presets::MAJORITY,
-        presets::MAJORITY_CATALYZED,
-        presets::MULTIPLY,
-        presets::EQUILIBRIUM,
-    ].iter().map(|x| StoCrn::parse(x).unwrap()).collect();
-}
+const CRN_LIST: [(&str, &str); 9] = [
+    (presets::MULTIPLY_CATALYZED, "Multiply catalyzed"),
+    (presets::ROCK_PAPER_SCISSORS, "Rock paper scissors"),
+    (presets::PREDATOR_PREY, "Predator prey"),
+    (presets::POLYA, "Polya"),
+    (presets::RPSLS, "RPSLS"),
+    (presets::MAJORITY, "Majority"),
+    (presets::MAJORITY_CATALYZED, "Majority catalyzed"),
+    (presets::MULTIPLY, "Multiply"),
+    (presets::EQUILIBRIUM, "Equilibrium"),
+];
 
 #[derive(Default)]
 struct LinePlot {
@@ -104,15 +102,19 @@ impl App for CrnApp {
             egui::ComboBox::from_label("Select a CRN")
                 .selected_text("Change CRN")
                 .show_ui(ui, |ui| {
-                    for i in 0..CRN_LIST.len() {
+                    CRN_LIST.iter().for_each(|(crn, name)| {
                         if ui
-                            .selectable_value(&mut self.crn, CRN_LIST[i].clone(), &i.to_string())
+                            .selectable_value(
+                                &mut self.crn,
+                                StoCrn::parse(crn).unwrap(),
+                                name.to_owned(),
+                            )
                             .clicked()
                         {
                             self.crn.reset();
                             self.state.reactions = self.crn.to_string();
                         }
-                    }
+                    });
                 });
             if ui.button("Resimulate").clicked() {
                 // println!("{:?}", self.crn.names);
