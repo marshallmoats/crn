@@ -5,7 +5,8 @@ edition = "2021"
 authors = ["Marshall Moats <marshallmoats@gmail.com>"]
 homepage = "https://github.com/marshallmoats/crn"
 respository = "https://github.com/marshallmoats/crn"
-description = "Library for Chemical Reaction Network (CRN) simulation."
+description = "Stochastic and deterministic simulation of chemical reaction networks."
+categories = ["simulation", "chemistry", "mathematics"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
