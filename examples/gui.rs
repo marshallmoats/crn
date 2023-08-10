@@ -6,7 +6,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::{presets, Crn, state::State};
+use crn::{presets, state::State, CrnSim};
 
 const CRN_LIST: [(&str, &str, &str); 9] = [
     (presets::RPSLS, "Rock paper scissors lizard spock", "Same as the rock paper scissors CRN, but with two more players."),
@@ -79,7 +79,7 @@ impl LinePlot {
 
 struct CrnApp {
     lp: LinePlot,
-    crn: Box<dyn Crn>,
+    crn: Box<dyn CrnSim>,
     state: CrnAppState,
 }
 

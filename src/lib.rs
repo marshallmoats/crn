@@ -8,7 +8,7 @@ use std::fmt::Display;
 
 pub use det::DetCrn;
 use itertools::Itertools;
-use state::State;
+pub use state::State;
 pub use sto::Error;
 pub use sto::StoCrn;
 
@@ -18,10 +18,10 @@ pub mod det;
 pub mod parse;
 /// Some fun CRNs to play with.
 pub mod presets;
-/// Stochastic CRNs.
-pub mod sto;
 /// State of a CRN.
 pub mod state;
+/// Stochastic CRNs.
+pub mod sto;
 
 /// A chemical reaction, with a rate parameter.
 #[derive(Clone, Debug, PartialEq)]
@@ -55,7 +55,7 @@ impl Reaction {
 }
 
 /// The essential behavior shared by stochastic and deterministic CRNs.
-pub trait Crn: Display {
+pub trait CrnSim: Display {
     /// Returns the CRN's reactions.
     fn reactions(&self) -> &[Reaction];
     /// Returns the CRN's current state.
@@ -68,7 +68,7 @@ pub trait Crn: Display {
 
 /// Shared behavior for stochastic and deterministic CRNs.
 #[derive(Default, Clone)]
-pub struct C<T> {
+pub struct Crn<T> {
     /// The CRN's reactions.
     pub rxns: Vec<Reaction>,
     /// The CRN's current state.
@@ -79,7 +79,7 @@ pub struct C<T> {
     pub names: bimap::BiHashMap<usize, String>,
 }
 
-impl<T> Display for C<T>
+impl<T> Display for Crn<T>
 where
     T: Display,
 {

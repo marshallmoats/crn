@@ -1,9 +1,9 @@
-use crate::{Crn, Reaction, State, C};
+use crate::{Crn, CrnSim, Reaction, State};
 
 const MAX_POINTS: usize = 100000;
 
 /// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the number of species are scaled to infinity.
-pub type DetCrn = C<f64>;
+pub type DetCrn = Crn<f64>;
 
 impl DetCrn {
     /// Simulates a single timestep.
@@ -38,7 +38,7 @@ impl DetCrn {
     }
 }
 
-impl Crn for DetCrn {
+impl CrnSim for DetCrn {
     fn reactions(&self) -> &[Reaction] {
         &self.rxns
     }

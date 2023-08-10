@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{Crn, Reaction, C, state::State};
+use crate::{state::State, Crn, CrnSim, Reaction};
 
 // const MAX_POINTS: usize = 100000;
 
@@ -20,7 +20,7 @@ pub enum Error {
 }
 
 /// A stochastic CRN. This is simulated using the Gillespie algorithm. Stochastic CRNs are essentially a type of continuous-time Markov chain.
-pub type StoCrn = C<i32>;
+pub type StoCrn = Crn<i32>;
 
 impl StoCrn {
     /// Simulate one reaction. Uses `rates` to avoid repeated allocations.
@@ -99,7 +99,7 @@ impl StoCrn {
     // }
 }
 
-impl Crn for StoCrn {
+impl CrnSim for StoCrn {
     fn reactions(&self) -> &[Reaction] {
         &self.rxns
     }

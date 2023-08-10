@@ -10,7 +10,7 @@ use nom::{
     IResult,
 };
 
-use crate::{Reaction, state::State, C};
+use crate::{state::State, Crn, Reaction};
 
 /// Errors that can occur while parsing a CRN.
 #[derive(Debug, Clone)]
@@ -82,13 +82,13 @@ fn parse_reactions(input: &str) -> IResult<&str, Vec<ReactionTokens>> {
     many0(parse_reaction)(input)
 }
 
-impl<T> C<T>
+impl<T> Crn<T>
 where
     T: Default + std::clone::Clone + std::str::FromStr,
     <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     /// Parse a CRN from a string.
-    pub fn parse(input: &str) -> Result<C<T>, ParseError> {
+    pub fn parse(input: &str) -> Result<Crn<T>, ParseError> {
         let (leftover_input, counts) = parse_counts(input).unwrap();
         let mut species_map: HashMap<&str, usize> = HashMap::new();
         let mut names = bimap::BiHashMap::<usize, String>::new();
