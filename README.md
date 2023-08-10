@@ -5,13 +5,26 @@
 
 `crn` can simulate both stochastic and deterministic CRNs with `StoCrn` and `DetCrn`, respectively.
 
-To create your own CRN, first declare the initial counts of each molecule:
+To create your own CRN, first declare the initial counts of each molecule, and then add the reactions, each optionally followed by a rate parameter (10 in the first reaction):
 
-`a = 10;`
 
-Then add the reactions, each optionally followed by a rate (in this case, 10):
+```
+let crn_string = "
+a = 10;
+b = 5;
+c = 0;
+a + b -> 2c : 10;
+c -> 3b;
+";
+```
 
-`a + b -> 2c : 10;`
+Pass the whole string to the parser:
+
+`let mut crn = StoCrn::parse(crn_string).unwrap()`
+
+Now let's simulate it for 3 seconds of virtual time:
+
+`let data = crn.simulate_history(3.0);`
 
 Try the examples for a graphical demonstration!
 
