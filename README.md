@@ -7,8 +7,7 @@
 
 To create your own CRN, first declare the initial counts of each molecule, and then add the reactions, each optionally followed by a rate parameter (10 in the first reaction):
 
-
-```
+```rust
 let crn_string = "
 a = 10;
 b = 5;
