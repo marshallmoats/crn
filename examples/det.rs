@@ -4,7 +4,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::DetCrn;
+use crn::{DetCrn, Crn};
 
 #[derive(Default)]
 struct LinePlot {

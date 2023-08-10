@@ -160,3 +160,11 @@ where
         self.species.iter_mut().for_each(|a| *a *= rhs);
     }
 }
+
+pub trait Crn: ToString
+{
+    fn reactions(&self) -> &[Reaction];
+    // fn simulate(&mut self, t: f64, dt: f64) -> Result<State<T>, Error>;
+    fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, Error>;
+    fn reset(&mut self);
+}

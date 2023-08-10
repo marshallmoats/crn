@@ -2,7 +2,10 @@ use itertools::Itertools;
 use rand::Rng;
 use std::collections::HashMap;
 
-use crate::{Reaction, State};
+use crate::{
+    parse::{parse_counts, parse_reactions, ParseError},
+    Crn, Reaction, State,
+};
 
 const MAX_POINTS: usize = 100000;
 
@@ -27,10 +30,6 @@ pub struct StoCrn {
 }
 
 impl StoCrn {
-    pub fn reset(&mut self) {
-        self.state = self.init_state.clone();
-    }
-
     pub fn single_step(&mut self) -> Result<(), Error> {
         self.step(&mut vec![0.0; self.rxns.len()])
     }
@@ -109,6 +108,75 @@ impl StoCrn {
 
         Ok(res)
     }
+
+    pub fn parse(input: &str) -> Result<StoCrn, ParseError> {
+        let (leftover_input, counts) = parse_counts(input).unwrap();
+        let mut species_map: HashMap<&str, usize> = HashMap::new();
+        let mut names = bimap::BiHashMap::<usize, String>::new();
+        let mut x = Vec::<i32>::with_capacity(counts.len());
+        for (i, (species, num)) in counts.iter().enumerate() {
+            if species_map.contains_key(species) {
+                return Err(ParseError::DuplicateDefinition(species.to_string()));
+            } else {
+                species_map.insert(species, i);
+                names.insert(i, species.to_string());
+                x.push(num.parse::<i32>().unwrap());
+            }
+        }
+
+        let (_leftover_input, reactions) = parse_reactions(leftover_input).unwrap();
+
+        let mut rxns = Vec::<Reaction>::with_capacity(reactions.len());
+
+        for ((reactants, products), rate) in reactions {
+            let mut reactant_map: HashMap<usize, i32> = HashMap::new();
+            let mut product_map: HashMap<usize, i32> = HashMap::new();
+
+            for (num, species) in reactants {
+                let num: i32 = if num.is_empty() {
+                    1
+                } else {
+                    num.parse().unwrap()
+                };
+                if !species_map.contains_key(species) {
+                    let len = species_map.len();
+                    species_map.insert(species, len);
+                    names.insert(len, species.to_string());
+                    x.push(0);
+                    reactant_map.insert(len, num);
+                } else {
+                    reactant_map.insert(species_map[species], num);
+                }
+            }
+
+            for (num, species) in products {
+                let num: i32 = if num.is_empty() {
+                    1
+                } else {
+                    num.parse().unwrap()
+                };
+                if !species_map.contains_key(species) {
+                    let len = species_map.len();
+                    species_map.insert(species, len);
+                    names.insert(len, species.to_string());
+                    x.push(0);
+                    product_map.insert(len, num);
+                } else {
+                    product_map.insert(species_map[species], num);
+                }
+            }
+            let rxn = Reaction::new(reactant_map, product_map, rate.unwrap_or(1.0));
+            rxns.push(rxn);
+        }
+
+        let state = State::new(x, 0.0);
+        Ok(StoCrn {
+            init_state: state.clone(),
+            state,
+            rxns,
+            names,
+        })
+    }
 }
 
 impl ToString for StoCrn {
@@ -151,5 +219,38 @@ impl ToString for StoCrn {
         }
 
         result
+    }
+}
+
+impl Crn for StoCrn {
+    fn reactions(&self) -> &[Reaction] {
+        &self.rxns
+    }
+
+    fn simulate_history(&mut self, t: f64, dt: f64) -> std::result::Result<Vec<State<f64>>, Error> {
+        let mut result = Vec::with_capacity((t / dt) as usize);
+
+        let mut rates = vec![0.0; self.rxns.len()];
+        while self.state.time < t {
+            if let Err(e) = self.step(&mut rates) {
+                break
+            }
+            let species = self.state.species.iter().map(|x| *x as f64).collect();
+            result.push(State {
+                species,
+                time: self.state.time,
+            });
+        }
+        Ok(result)
+    }
+
+    fn reset(&mut self) {
+        self.state = self.init_state.clone();
+    }
+}
+
+impl From<String> for StoCrn {
+    fn from(s: String) -> Self {
+        StoCrn::parse(&s).unwrap()
     }
 }

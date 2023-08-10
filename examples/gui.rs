@@ -4,7 +4,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::{presets, StoCrn};
+use crn::{presets, Crn, DetCrn, StoCrn, State};
 
 const CRN_LIST: [(&str, &str); 9] = [
     (presets::MULTIPLY_CATALYZED, "Multiply catalyzed"),
@@ -61,17 +61,16 @@ impl LinePlot {
     }
 }
 
-#[derive(Default)]
-pub struct CrnApp {
+struct CrnApp {
     lp: LinePlot,
-    crn: StoCrn,
+    crn: Box<dyn Crn>,
     state: CrnAppState,
 }
 
 #[derive(Default)]
 struct CrnAppState {
     relative: bool,
-    simulation_length: usize,
+    simulation_length: f64,
     reactions: String,
     error: Option<crn::Error>,
 }
@@ -89,7 +88,7 @@ impl App for CrnApp {
 
                 if ui.button("Parse").clicked() {
                     match crn::StoCrn::parse(&self.state.reactions) {
-                        Ok(crn) => self.crn = crn,
+                        Ok(crn) => self.crn = Box::new(crn),
                         Err(e) => {
                             println!("Error: {:?}", e);
                         }
@@ -104,11 +103,7 @@ impl App for CrnApp {
                 .show_ui(ui, |ui| {
                     CRN_LIST.iter().for_each(|(crn, name)| {
                         if ui
-                            .selectable_value(
-                                &mut self.crn,
-                                StoCrn::parse(crn).unwrap(),
-                                name.to_owned(),
-                            )
+                            .selectable_value(&mut self.state.reactions, crn.to_string(), name.to_owned())
                             .clicked()
                         {
                             self.crn.reset();
@@ -119,10 +114,10 @@ impl App for CrnApp {
             if ui.button("Resimulate").clicked() {
                 // println!("{:?}", self.crn.names);
                 self.crn.reset();
-                let new_data = self.crn.simulate_history(self.state.simulation_length);
+                let new_data = self.crn.simulate_history(self.state.simulation_length, 0.001);
                 match new_data {
                     Ok(data) => {
-                        self.lp.data = data;
+                        self.lp.data = transpose(data);
                         self.state.error = None;
                     }
                     Err(s) => self.state.error = Some(s),
@@ -151,11 +146,11 @@ impl CrnApp {
             },
             state: CrnAppState {
                 relative: false,
-                simulation_length: 10000,
+                simulation_length: 1.0,
                 reactions: "A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;".to_owned(),
                 ..Default::default()
             },
-            crn: crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap(),
+            crn: Box::new(crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap()),
         }
     }
 }
@@ -172,4 +167,17 @@ fn main() {
         Box::new(|cc| Box::new(CrnApp::new(cc))),
     )
     .unwrap();
+}
+
+fn transpose(data: Vec<State<f64>>) -> Vec<Vec<(f64, f64)>> {
+    let mut result = Vec::new();
+    for i in 0..data[0].species.len() {
+        result.push(Vec::new());
+    }
+    for state in data {
+        for (i, species) in state.species.iter().enumerate() {
+            result[i].push((state.time, *species));
+        }
+    }
+    result
 }
