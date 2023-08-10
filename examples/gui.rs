@@ -8,16 +8,16 @@ use egui::{
 
 use crn::{presets, Crn, State};
 
-const CRN_LIST: [(&str, &str); 9] = [
-    (presets::RPSLS, "Rock paper scissors lizard spock"),
-    (presets::MULTIPLY_CATALYZED, "Multiply catalyzed"),
-    (presets::ROCK_PAPER_SCISSORS, "Rock paper scissors"),
-    (presets::PREDATOR_PREY, "Predator prey"),
-    (presets::POLYA, "Polya"),
-    (presets::MAJORITY, "Majority"),
-    (presets::MAJORITY_CATALYZED, "Majority catalyzed"),
-    (presets::MULTIPLY, "Multiply"),
-    (presets::EQUILIBRIUM, "Equilibrium"),
+const CRN_LIST: [(&str, &str, &str); 9] = [
+    (presets::RPSLS, "Rock paper scissors lizard spock", "Same as the rock paper scissors CRN, but with two more players."),
+    (presets::MULTIPLY_CATALYZED, "Multiply catalyzed", "Calculates the product with some random perturbations of catalysts."),
+    (presets::ROCK_PAPER_SCISSORS, "Rock paper scissors", "The molecules play rock paper scissors. The winner transforms the loser into a copy of itself."),
+    (presets::PREDATOR_PREY, "Predator prey", "A is the prey and B is the predator."),
+    (presets::POLYA, "Polya", "Polya's urn. Draw a marble"),
+    (presets::MAJORITY, "Majority", "Determines which of A and B is more abundant."),
+    (presets::MAJORITY_CATALYZED, "Majority catalyzed", "The majority CRN, but with catalysts that transform into one another."),
+    (presets::MULTIPLY, "Multiply", "Approximately calculates the product of A and B. A deterministic simulation will compute it exactly."),
+    (presets::EQUILIBRIUM, "Equilibrium", "A basic CRN with two reactions that reach equilibrium."),
 ];
 
 #[derive(Default)]
@@ -90,6 +90,7 @@ struct CrnAppState {
     reactions: String,
     error: Option<crn::Error>,
     crn_type: CrnTypes,
+    desc: &'static str,
 }
 
 impl App for CrnApp {
@@ -119,14 +120,16 @@ impl App for CrnApp {
                         },
                     }
                 }
+
+                ui.label(self.state.desc);
             });
 
         CentralPanel::default().show(ctx, |ui| {
-            ui.checkbox(&mut self.state.relative, "Relative");
+            ui.checkbox(&mut self.state.relative, "Relative Proportions");
             egui::ComboBox::from_label("Select a CRN")
                 .selected_text("Change CRN")
                 .show_ui(ui, |ui| {
-                    CRN_LIST.iter().for_each(|(crn, name)| {
+                    CRN_LIST.iter().for_each(|(crn, name, desc)| {
                         if ui
                             .selectable_value(
                                 &mut self.state.reactions,
@@ -135,6 +138,7 @@ impl App for CrnApp {
                             )
                             .clicked()
                         {
+                            self.state.desc = desc;
                             self.crn.reset();
 
                             match self.state.crn_type {
@@ -162,7 +166,10 @@ impl App for CrnApp {
                     .simulate_history(self.state.simulation_length, self.state.dt);
                 match new_data {
                     Ok(data) => {
-                        self.lp.data = transpose(data);
+                        self.lp.data = match self.state.relative {
+                            true => normalize(transpose(data)),
+                            false => transpose(data),
+                        };
                         self.state.error = None;
                     }
                     Err(s) => self.state.error = Some(s),
@@ -217,6 +224,7 @@ impl CrnApp {
                 error: None,
                 crn_type: CrnTypes::Sto,
                 dt: 0.001,
+                desc: CRN_LIST[0].2,
             },
             crn: Box::new(
                 crn::StoCrn::parse(presets::RPSLS).unwrap(),
@@ -248,6 +256,22 @@ fn transpose(data: Vec<State<f64>>) -> Vec<Vec<(f64, f64)>> {
         for (i, species) in state.species.iter().enumerate() {
             result[i].push((state.time, *species));
         }
+    }
+    result
+}
+
+fn normalize(data: Vec<Vec<(f64, f64)>>) -> Vec<Vec<(f64, f64)>> {
+    let mut result = Vec::new();
+    for species in data {
+        let mut new_species = Vec::new();
+        let mut sum = 0.0;
+        for (_, val) in &species {
+            sum += val;
+        }
+        for (time, val) in species {
+            new_species.push((time, val / sum));
+        }
+        result.push(new_species);
     }
     result
 }
