@@ -2,36 +2,15 @@ use std::{collections::HashMap, fmt::Display};
 
 use itertools::Itertools;
 
-use crate::{
-    parse::{parse_counts, parse_reactions, ParseError},
-    Crn, Reaction, State,
-};
+use crate::{Crn, Reaction, State, C};
 
 const MAX_POINTS: usize = 100000;
 
 /// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the number of species are scaled to infinity.
-#[derive(Default, Clone)]
-pub struct DetCrn {
-    pub rxns: Vec<Reaction>,
-    pub state: State<f64>,
-    pub init_state: State<f64>,
-    pub names: bimap::BiHashMap<usize, String>,
-}
+pub type DetCrn = C<f64>;
 
 impl DetCrn {
-    pub fn new(
-        rxns: Vec<Reaction>,
-        state: State<f64>,
-        names: bimap::BiHashMap<usize, String>,
-    ) -> Self {
-        Self {
-            rxns,
-            init_state: state.clone(),
-            state,
-            names,
-        }
-    }
-
+    /// Simulates a single timestep.
     pub fn step(&mut self, dt: f64) {
         let k1 = self.state.species_rates(&self.rxns);
         let k2 = (&self.state + &(&k1 * (dt / 2.0))).species_rates(&self.rxns);
@@ -45,6 +24,7 @@ impl DetCrn {
         self.state.time += dt;
     }
 
+    /// Simulates a number of steps with a given timestep. Returns a collection of individual species' history.
     pub fn simulate_data(&mut self, steps: usize, dt: f64) -> Vec<Vec<(f64, f64)>> {
         let ratio = (steps / MAX_POINTS).max(1);
         let mut species: Vec<Vec<(f64, f64)>> =
@@ -59,70 +39,6 @@ impl DetCrn {
             self.step(dt);
         }
         species
-    }
-
-    pub fn parse(input: &str) -> Result<DetCrn, ParseError> {
-        let (leftover_input, counts) = parse_counts(input).unwrap();
-        let mut species_map: HashMap<&str, usize> = HashMap::new();
-        let mut names = bimap::BiHashMap::<usize, String>::new();
-        let mut x = Vec::<f64>::with_capacity(counts.len());
-        for (i, (species, num)) in counts.iter().enumerate() {
-            if species_map.contains_key(species) {
-                return Err(ParseError::DuplicateDefinition(species.to_string()));
-            } else {
-                species_map.insert(species, i);
-                names.insert(i, species.to_string());
-                x.push(num.parse::<f64>().unwrap());
-            }
-        }
-
-        let (_leftover_input, reactions) = parse_reactions(leftover_input).unwrap();
-
-        let mut rxns = Vec::<Reaction>::with_capacity(reactions.len());
-
-        for ((reactants, products), rate) in reactions {
-            let mut reactant_map: HashMap<usize, i32> = HashMap::new();
-            let mut product_map: HashMap<usize, i32> = HashMap::new();
-
-            for (num, species) in reactants {
-                let num: i32 = if num.is_empty() {
-                    1
-                } else {
-                    num.parse().unwrap()
-                };
-                if !species_map.contains_key(species) {
-                    let len = species_map.len();
-                    species_map.insert(species, len);
-                    names.insert(len, species.to_string());
-                    x.push(0.0);
-                    reactant_map.insert(len, num);
-                } else {
-                    reactant_map.insert(species_map[species], num);
-                }
-            }
-
-            for (num, species) in products {
-                let num: i32 = if num.is_empty() {
-                    1
-                } else {
-                    num.parse().unwrap()
-                };
-                if !species_map.contains_key(species) {
-                    let len = species_map.len();
-                    species_map.insert(species, len);
-                    names.insert(len, species.to_string());
-                    x.push(0.0);
-                    product_map.insert(len, num);
-                } else {
-                    product_map.insert(species_map[species], num);
-                }
-            }
-            let rxn = Reaction::new(reactant_map, product_map, rate.unwrap_or(1.0));
-            rxns.push(rxn);
-        }
-
-        let state = State::new(x, 0.0);
-        Ok(DetCrn::new(rxns, state, names))
     }
 }
 

@@ -1,6 +1,8 @@
 //! # crn
 //! A library for simulating chemical reaction networks.
 
+#![warn(missing_docs)]
+
 use std::collections::HashMap;
 use std::fmt::Display;
 
@@ -8,9 +10,13 @@ pub use det::DetCrn;
 pub use sto::Error;
 pub use sto::StoCrn;
 
+/// Deterministic CRNs.
 pub mod det;
+/// Parsing CRNs from strings.
 pub mod parse;
+/// Some fun CRNs to play with.
 pub mod presets;
+/// Stochastic CRNs.
 pub mod sto;
 
 /// A chemical reaction, with a rate parameter.
@@ -47,29 +53,28 @@ impl Reaction {
 /// A state of a CRN. StoCrn uses integers, DetCrn uses floats.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct State<T> {
+    /// Amount of each species. Will be an integer for stochastic CRNs, and a float for deterministic CRNs.
     pub species: Vec<T>,
+    /// Current time.
     pub time: f64,
 }
 
-impl<T> State<T> {
-    pub fn new(species: Vec<T>, time: f64) -> Self {
-        Self { species, time }
-    }
-}
-
 impl State<i32> {
+    /// Applies a reaction, modifying the amounts of each species.
     pub fn apply(&mut self, rxn: &Reaction) {
         for (i, d) in rxn.delta.iter() {
             self.species[*i] += d;
         }
     }
 
+    /// Returns true if the reaction is applicable to the current state.
     pub fn applicable(&self, rxn: &Reaction) -> bool {
         rxn.reactants
             .iter()
             .all(|(species, count)| count <= &self.species[*species])
     }
 
+    /// Returns the rate at which this reaction is occurring -- if the reactants are more abundant, this will be higher. Note that this is scaled by the rate parameter of the reaction.
     pub fn rate(&self, rxn: &Reaction) -> f64 {
         if self.applicable(rxn) {
             rxn.reactants
@@ -87,6 +92,7 @@ impl State<i32> {
 }
 
 impl State<f64> {
+    /// Returns the rate at which this reaction is occurring -- if the reactants are more abundant, this will be higher. Note that this is scaled by the rate parameter of the reaction.
     pub fn rate(&self, rxn: &Reaction) -> f64 {
         rxn.reactants
             .iter()
@@ -95,6 +101,7 @@ impl State<f64> {
             })
     }
 
+    /// Given a set of reactions, returns the instantaneous rate of change of each species.
     pub fn species_rates(&self, rxns: &[Reaction]) -> Self {
         let mut res = Self {
             species: vec![0.0; self.species.len()],
@@ -166,9 +173,25 @@ where
 
 /// The essential behavior shared by stochastic and deterministic CRNs.
 pub trait Crn: Display {
+    /// Returns the CRN's reactions.
     fn reactions(&self) -> &[Reaction];
+    /// Returns the CRN's current state.
     fn state(&self) -> State<f64>;
-    // fn simulate(&mut self, t: f64, dt: f64) -> Result<State<T>, Error>;
+    /// Simulates the CRN for a given amount of time with a given timestep (only used for DetCrn). Returns the history of the CRN's state. StoCrn's history is casted to floats.
     fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, Error>;
+    /// Resets the CRN to its initial state.
     fn reset(&mut self);
+}
+
+/// Shared behavior for stochastic and deterministic CRNs.
+#[derive(Default, Clone)]
+pub struct C<T> {
+    /// The CRN's reactions.
+    pub rxns: Vec<Reaction>,
+    /// The CRN's current state.
+    pub state: State<T>,
+    /// The CRN's initial state, which it reverts to on a reset.
+    pub init_state: State<T>,
+    /// The name of each species.
+    pub names: bimap::BiHashMap<usize, String>,
 }

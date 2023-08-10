@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, alphanumeric0, digit0, multispace0},
@@ -8,14 +10,15 @@ use nom::{
     IResult,
 };
 
+use crate::{Reaction, State, C};
+
+/// Errors that can occur while parsing a CRN.
 #[derive(Debug, Clone)]
 pub enum ParseError {
-    DuplicateSpecies(String),
-    DuplicateReaction,
+    /// Species amount was defined twice.
     DuplicateDefinition(String),
+    /// Species name was used in a reaction but not defined.
     InvalidSpecies,
-    InvalidReaction,
-    InvalidDefinition,
 }
 
 fn species_name(input: &str) -> IResult<&str, &str> {
@@ -41,7 +44,7 @@ fn parse_count(input: &str) -> IResult<&str, (&str, &str)> {
     )(input)
 }
 
-pub fn parse_counts(input: &str) -> IResult<&str, Vec<(&str, &str)>> {
+fn parse_counts(input: &str) -> IResult<&str, Vec<(&str, &str)>> {
     many0(parse_count)(input)
 }
 
@@ -75,6 +78,85 @@ fn parse_reaction(input: &str) -> IResult<&str, ReactionTokens> {
     )(input)
 }
 
-pub fn parse_reactions(input: &str) -> IResult<&str, Vec<ReactionTokens>> {
+fn parse_reactions(input: &str) -> IResult<&str, Vec<ReactionTokens>> {
     many0(parse_reaction)(input)
+}
+
+impl<T> C<T>
+where
+    T: Default + std::clone::Clone + std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
+{
+    /// Parse a CRN from a string.
+    pub fn parse(input: &str) -> Result<C<T>, ParseError> {
+        let (leftover_input, counts) = parse_counts(input).unwrap();
+        let mut species_map: HashMap<&str, usize> = HashMap::new();
+        let mut names = bimap::BiHashMap::<usize, String>::new();
+        let mut x = Vec::<T>::with_capacity(counts.len());
+        for (i, (species, num)) in counts.iter().enumerate() {
+            if species_map.contains_key(species) {
+                return Err(ParseError::DuplicateDefinition(species.to_string()));
+            } else {
+                species_map.insert(species, i);
+                names.insert(i, species.to_string());
+                x.push(num.parse::<T>().unwrap());
+            }
+        }
+
+        let (_leftover_input, reactions) = parse_reactions(leftover_input).unwrap();
+
+        let mut rxns = Vec::<Reaction>::with_capacity(reactions.len());
+
+        for ((reactants, products), rate) in reactions {
+            let mut reactant_map: HashMap<usize, i32> = HashMap::new();
+            let mut product_map: HashMap<usize, i32> = HashMap::new();
+
+            for (num, species) in reactants {
+                let num: i32 = if num.is_empty() {
+                    1
+                } else {
+                    num.parse().unwrap()
+                };
+                if !species_map.contains_key(species) {
+                    let len = species_map.len();
+                    species_map.insert(species, len);
+                    names.insert(len, species.to_string());
+                    x.push(T::default());
+                    reactant_map.insert(len, num);
+                } else {
+                    reactant_map.insert(species_map[species], num);
+                }
+            }
+
+            for (num, species) in products {
+                let num: i32 = if num.is_empty() {
+                    1
+                } else {
+                    num.parse().unwrap()
+                };
+                if !species_map.contains_key(species) {
+                    let len = species_map.len();
+                    species_map.insert(species, len);
+                    names.insert(len, species.to_string());
+                    x.push(T::default());
+                    product_map.insert(len, num);
+                } else {
+                    product_map.insert(species_map[species], num);
+                }
+            }
+            let rxn = Reaction::new(reactant_map, product_map, rate.unwrap_or(1.0));
+            rxns.push(rxn);
+        }
+
+        let state = State {
+            species: x,
+            time: 0.0,
+        };
+        Ok(Self {
+            init_state: state.clone(),
+            rxns,
+            state,
+            names,
+        })
+    }
 }

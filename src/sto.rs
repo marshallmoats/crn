@@ -3,11 +3,10 @@ use rand::Rng;
 use std::{collections::HashMap, fmt::Display};
 
 use crate::{
-    parse::{parse_counts, parse_reactions, ParseError},
-    Crn, Reaction, State,
+    Crn, Reaction, State, C,
 };
 
-const MAX_POINTS: usize = 100000;
+// const MAX_POINTS: usize = 100000;
 
 use std::fmt::Debug;
 
@@ -16,28 +15,19 @@ use thiserror::Error;
 /// A simulation can fail because no more reactions are possible, or because of numerical instability.
 #[derive(Error, Debug)]
 pub enum Error {
+    /// No reactions are possible from the current state.
     #[error("CRN has reached terminal state")]
     TerminalState,
+    /// The simulation has become numerically unstable.
     #[error("Insufficient precision for accurate simulation")]
     InsufficientPrecision,
 }
 
 /// A stochastic CRN. This is simulated using the Gillespie algorithm. Stochastic CRNs are essentially a type of continuous-time Markov chain.
-#[derive(Clone, Default, Debug, PartialEq)]
-pub struct StoCrn {
-    pub state: State<i32>,
-    pub init_state: State<i32>,
-    pub rxns: Vec<Reaction>,
-    pub names: bimap::BiHashMap<usize, String>,
-}
+pub type StoCrn = C<i32>;
 
 impl StoCrn {
-    pub fn single_step(&mut self) -> Result<(), Error> {
-        self.step(&mut vec![0.0; self.rxns.len()])
-    }
-
-    // reuses the rates vector to avoid reallocating every step
-    // if you only need one step, use single_step
+    /// Simulate one reaction. Uses `rates` to avoid repeated allocations.
     pub fn step(&mut self, rates: &mut [f64]) -> Result<(), Error> {
         let mut rate = 0.0;
 
@@ -67,6 +57,7 @@ impl StoCrn {
         Err(Error::InsufficientPrecision)
     }
 
+    /// Simulate a number of reactions.
     pub fn steps(&mut self, steps: usize) -> Result<(), Error> {
         let mut rates = vec![0.0; self.rxns.len()];
         for _ in 0..steps {
@@ -75,110 +66,41 @@ impl StoCrn {
         Ok(())
     }
 
-    pub fn simulate_history(&mut self, steps: usize) -> Result<Vec<Vec<(f64, f64)>>, Error> {
-        let mut res = vec![Vec::with_capacity(steps.min(MAX_POINTS)); self.state.species.len()];
+    // pub fn simulate_history(&mut self, steps: usize) -> Result<Vec<Vec<(f64, f64)>>, Error> {
+    //     let mut res = vec![Vec::with_capacity(steps.min(MAX_POINTS)); self.state.species.len()];
 
-        let mut rates = vec![0.0; self.rxns.len()];
+    //     let mut rates = vec![0.0; self.rxns.len()];
 
-        if steps > MAX_POINTS {
-            let ratio = steps / MAX_POINTS;
-            // println!("ratio: {}", ratio);
-            for i in 0..steps {
-                if i % ratio == 0 {
-                    for (j, s) in self.state.species.iter().enumerate() {
-                        res[j].push((self.state.time, *s as f64));
-                    }
-                }
-                match self.step(&mut rates) {
-                    Ok(_) => {}
-                    Err(Error::TerminalState) => break,
-                    Err(e) => return Err(e),
-                }
-            }
-        } else {
-            for _ in 0..steps {
-                for (j, s) in self.state.species.iter().enumerate() {
-                    res[j].push((self.state.time, *s as f64));
-                }
-                match self.step(&mut rates) {
-                    Ok(_) => {}
-                    Err(Error::TerminalState) => break,
-                    Err(e) => return Err(e),
-                }
-            }
-        }
+    //     if steps > MAX_POINTS {
+    //         let ratio = steps / MAX_POINTS;
+    //         // println!("ratio: {}", ratio);
+    //         for i in 0..steps {
+    //             if i % ratio == 0 {
+    //                 for (j, s) in self.state.species.iter().enumerate() {
+    //                     res[j].push((self.state.time, *s as f64));
+    //                 }
+    //             }
+    //             match self.step(&mut rates) {
+    //                 Ok(_) => {}
+    //                 Err(Error::TerminalState) => break,
+    //                 Err(e) => return Err(e),
+    //             }
+    //         }
+    //     } else {
+    //         for _ in 0..steps {
+    //             for (j, s) in self.state.species.iter().enumerate() {
+    //                 res[j].push((self.state.time, *s as f64));
+    //             }
+    //             match self.step(&mut rates) {
+    //                 Ok(_) => {}
+    //                 Err(Error::TerminalState) => break,
+    //                 Err(e) => return Err(e),
+    //             }
+    //         }
+    //     }
 
-        Ok(res)
-    }
-
-    pub fn parse(input: &str) -> Result<StoCrn, ParseError> {
-        let (leftover_input, counts) = parse_counts(input).unwrap();
-        let mut species_map: HashMap<&str, usize> = HashMap::new();
-        let mut names = bimap::BiHashMap::<usize, String>::new();
-        let mut x = Vec::<i32>::with_capacity(counts.len());
-        for (i, (species, num)) in counts.iter().enumerate() {
-            if species_map.contains_key(species) {
-                return Err(ParseError::DuplicateDefinition(species.to_string()));
-            } else {
-                species_map.insert(species, i);
-                names.insert(i, species.to_string());
-                x.push(num.parse::<i32>().unwrap());
-            }
-        }
-
-        let (_leftover_input, reactions) = parse_reactions(leftover_input).unwrap();
-
-        let mut rxns = Vec::<Reaction>::with_capacity(reactions.len());
-
-        for ((reactants, products), rate) in reactions {
-            let mut reactant_map: HashMap<usize, i32> = HashMap::new();
-            let mut product_map: HashMap<usize, i32> = HashMap::new();
-
-            for (num, species) in reactants {
-                let num: i32 = if num.is_empty() {
-                    1
-                } else {
-                    num.parse().unwrap()
-                };
-                if !species_map.contains_key(species) {
-                    let len = species_map.len();
-                    species_map.insert(species, len);
-                    names.insert(len, species.to_string());
-                    x.push(0);
-                    reactant_map.insert(len, num);
-                } else {
-                    reactant_map.insert(species_map[species], num);
-                }
-            }
-
-            for (num, species) in products {
-                let num: i32 = if num.is_empty() {
-                    1
-                } else {
-                    num.parse().unwrap()
-                };
-                if !species_map.contains_key(species) {
-                    let len = species_map.len();
-                    species_map.insert(species, len);
-                    names.insert(len, species.to_string());
-                    x.push(0);
-                    product_map.insert(len, num);
-                } else {
-                    product_map.insert(species_map[species], num);
-                }
-            }
-            let rxn = Reaction::new(reactant_map, product_map, rate.unwrap_or(1.0));
-            rxns.push(rxn);
-        }
-
-        let state = State::new(x, 0.0);
-        Ok(StoCrn {
-            init_state: state.clone(),
-            state,
-            rxns,
-            names,
-        })
-    }
+    //     Ok(res)
+    // }
 }
 
 impl Display for StoCrn {
