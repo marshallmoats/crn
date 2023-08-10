@@ -4,7 +4,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::{presets, Crn, DetCrn, StoCrn, State};
+use crn::{presets, Crn, State};
 
 const CRN_LIST: [(&str, &str); 9] = [
     (presets::MULTIPLY_CATALYZED, "Multiply catalyzed"),
@@ -171,7 +171,7 @@ fn main() {
 
 fn transpose(data: Vec<State<f64>>) -> Vec<Vec<(f64, f64)>> {
     let mut result = Vec::new();
-    for i in 0..data[0].species.len() {
+    for _ in 0..data[0].species.len() {
         result.push(Vec::new());
     }
     for state in data {

@@ -232,7 +232,7 @@ impl Crn for StoCrn {
 
         let mut rates = vec![0.0; self.rxns.len()];
         while self.state.time < t {
-            if let Err(e) = self.step(&mut rates) {
+            if self.step(&mut rates).is_err() {
                 break
             }
             let species = self.state.species.iter().map(|x| *x as f64).collect();
