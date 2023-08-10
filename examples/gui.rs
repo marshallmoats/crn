@@ -6,7 +6,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::{presets, Crn, State};
+use crn::{presets, Crn, state::State};
 
 const CRN_LIST: [(&str, &str, &str); 9] = [
     (presets::RPSLS, "Rock paper scissors lizard spock", "Same as the rock paper scissors CRN, but with two more players."),

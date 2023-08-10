@@ -1,10 +1,6 @@
-use itertools::Itertools;
 use rand::Rng;
-use std::{collections::HashMap, fmt::Display};
 
-use crate::{
-    Crn, Reaction, State, C,
-};
+use crate::{Crn, Reaction, C, state::State};
 
 // const MAX_POINTS: usize = 100000;
 
@@ -103,49 +99,6 @@ impl StoCrn {
     // }
 }
 
-impl Display for StoCrn {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let reactants_to_string = move |reactants: &HashMap<usize, i32>| -> String {
-            if reactants.is_empty() {
-                return String::new();
-            }
-            let mut result = reactants
-                .iter()
-                .sorted()
-                .fold(String::new(), |acc, (i, count)| {
-                    if *count == 1 {
-                        acc + self.names.get_by_left(i).unwrap() + " + "
-                    } else {
-                        acc + &format!("{}{} + ", count, self.names.get_by_left(i).unwrap())
-                    }
-                });
-            result.truncate(result.len() - 3);
-            result
-        };
-
-        let mut result = String::new();
-
-        for (i, ct) in self.state.species.iter().enumerate() {
-            result.push_str(&format!(
-                "{} = {};\n",
-                self.names.get_by_left(&i).unwrap(),
-                ct
-            ));
-        }
-
-        for rxn in self.rxns.iter() {
-            result.push_str(&format!(
-                "{} -> {} : {};\n",
-                reactants_to_string(&rxn.reactants),
-                reactants_to_string(&rxn.products),
-                rxn.rate
-            ));
-        }
-
-        write!(f, "{}", result)
-    }
-}
-
 impl Crn for StoCrn {
     fn reactions(&self) -> &[Reaction] {
         &self.rxns
@@ -159,11 +112,7 @@ impl Crn for StoCrn {
         state
     }
 
-    fn simulate_history(
-        &mut self,
-        t: f64,
-        _dt: f64,
-    ) -> std::result::Result<Vec<State<f64>>, Error> {
+    fn simulate_history(&mut self, t: f64, _dt: f64) -> Result<Vec<State<f64>>, Error> {
         let mut result = Vec::new();
 
         let mut rates = vec![0.0; self.rxns.len()];

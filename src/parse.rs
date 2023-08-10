@@ -10,7 +10,7 @@ use nom::{
     IResult,
 };
 
-use crate::{Reaction, State, C};
+use crate::{Reaction, state::State, C};
 
 /// Errors that can occur while parsing a CRN.
 #[derive(Debug, Clone)]
