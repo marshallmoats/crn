@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use eframe::App;
 use egui::{
     plot::{Legend, Line, Plot},
@@ -26,6 +28,15 @@ struct LinePlot {
 enum CrnTypes {
     Sto,
     Det,
+}
+
+impl Display for CrnTypes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CrnTypes::Sto => write!(f, "Stochastic"),
+            CrnTypes::Det => write!(f, "Deterministic"),
+        }
+    }
 }
 
 impl LinePlot {
@@ -74,6 +85,7 @@ struct CrnApp {
 
 struct CrnAppState {
     relative: bool,
+    dt: f64,
     simulation_length: f64,
     reactions: String,
     error: Option<crn::Error>,
@@ -144,11 +156,10 @@ impl App for CrnApp {
                     });
                 });
             if ui.button("Resimulate").clicked() {
-                // println!("{:?}", self.crn.names);
                 self.crn.reset();
                 let new_data = self
                     .crn
-                    .simulate_history(self.state.simulation_length, 0.001);
+                    .simulate_history(self.state.simulation_length, self.state.dt);
                 match new_data {
                     Ok(data) => {
                         self.lp.data = transpose(data);
@@ -159,7 +170,7 @@ impl App for CrnApp {
                 println!("{:?}", self.crn.state());
             }
 
-            if ui.button("toggle type").clicked() {
+            if ui.button(self.state.crn_type.to_string()).clicked() {
                 match self.state.crn_type {
                     CrnTypes::Sto => {
                         self.state.crn_type = CrnTypes::Det;
@@ -178,9 +189,15 @@ impl App for CrnApp {
                 .map(|e| ui.label(format!("Error: {:?}", e)));
             // ui.label(format!("Error: {:?}", self.state.error));
 
+            ui.label("Simulation length");
             let mut input = self.state.simulation_length.to_string();
             ui.text_edit_singleline(&mut input);
             self.state.simulation_length = input.parse().unwrap_or(self.state.simulation_length);
+
+            ui.label("dt (only affects deterministic runs)");
+            let mut input = self.state.dt.to_string();
+            ui.text_edit_singleline(&mut input);
+            self.state.dt = input.parse().unwrap_or(self.state.dt);
 
             self.lp.ui(ui);
         });
@@ -199,6 +216,7 @@ impl CrnApp {
                 reactions: presets::RPSLS.to_string(),
                 error: None,
                 crn_type: CrnTypes::Sto,
+                dt: 0.001,
             },
             crn: Box::new(
                 crn::StoCrn::parse(presets::RPSLS).unwrap(),

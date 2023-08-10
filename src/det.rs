@@ -182,7 +182,6 @@ impl Crn for DetCrn {
         for _ in 0..steps {
             species.push(self.state.clone());
             self.step(dt);
-            println!("{:?}", self.state);
         }
         Ok(species)
     }

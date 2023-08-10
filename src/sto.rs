@@ -235,8 +235,8 @@ impl Crn for StoCrn {
         state
     }
 
-    fn simulate_history(&mut self, t: f64, dt: f64) -> std::result::Result<Vec<State<f64>>, Error> {
-        let mut result = Vec::with_capacity((t / dt) as usize);
+    fn simulate_history(&mut self, t: f64, _dt: f64) -> std::result::Result<Vec<State<f64>>, Error> {
+        let mut result = Vec::new();
 
         let mut rates = vec![0.0; self.rxns.len()];
         while self.state.time < t {
