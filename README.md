@@ -25,10 +25,12 @@ Now let's simulate it for 3 seconds of virtual time:
 
 `let data = crn.simulate_history(3.0);`
 
-Try the examples for a graphical demonstration!
+Some premade CRNs can be found in the `presets` module.
+
+Run this for a graphical demonstration!
 
 `cargo run --release --example gui`
 
-Note: deterministic simulations are unstable with large numbers. Try scaling down all initial amounts (can be noninteger, unlike stochastic simulations) if you're having issues.
+Note: deterministic simulations tend to be unstable with large numbers -- I'm still working on this. Try scaling down all initial amounts (can be noninteger, unlike stochastic simulations) if you're having issues.
 
 ![gui demo](media/1691519892.png)
