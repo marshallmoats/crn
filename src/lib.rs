@@ -54,18 +54,6 @@ impl Reaction {
     }
 }
 
-/// The essential behavior shared by stochastic and deterministic CRNs.
-pub trait CrnSim: Display {
-    /// Returns the CRN's reactions.
-    fn reactions(&self) -> &[Reaction];
-    /// Returns the CRN's current state.
-    fn state(&self) -> State<f64>;
-    /// Simulates the CRN for a given amount of time with a given timestep (only used for DetCrn). Returns the history of the CRN's state. StoCrn's history is casted to floats.
-    fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, Error>;
-    /// Resets the CRN to its initial state.
-    fn reset(&mut self);
-}
-
 /// Shared behavior for stochastic and deterministic CRNs.
 #[derive(Default, Clone)]
 pub struct Crn<T> {

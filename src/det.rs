@@ -1,4 +1,4 @@
-use crate::{Crn, CrnSim, Reaction, State};
+use crate::{Crn, Reaction, State};
 
 const MAX_POINTS: usize = 100000;
 
@@ -38,16 +38,16 @@ impl DetCrn {
     }
 }
 
-impl CrnSim for DetCrn {
-    fn reactions(&self) -> &[Reaction] {
+impl DetCrn {
+    pub fn reactions(&self) -> &[Reaction] {
         &self.rxns
     }
 
-    fn state(&self) -> State<f64> {
+    pub fn state(&self) -> State<f64> {
         self.state.clone()
     }
 
-    fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, crate::Error> {
+    pub fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, crate::Error> {
         let steps = (t / dt).ceil() as usize;
         let mut result: Vec<State<f64>> = Vec::with_capacity(steps);
         for _ in 0..steps {
@@ -57,7 +57,7 @@ impl CrnSim for DetCrn {
         Ok(result)
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.state = self.init_state.clone();
     }
 }

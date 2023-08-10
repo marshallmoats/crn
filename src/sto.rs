@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{state::State, Crn, CrnSim, Reaction};
+use crate::{state::State, Crn, Reaction};
 
 // const MAX_POINTS: usize = 100000;
 
@@ -99,12 +99,12 @@ impl StoCrn {
     // }
 }
 
-impl CrnSim for StoCrn {
-    fn reactions(&self) -> &[Reaction] {
+impl StoCrn {
+    pub fn reactions(&self) -> &[Reaction] {
         &self.rxns
     }
 
-    fn state(&self) -> State<f64> {
+    pub fn state(&self) -> State<f64> {
         let state = State {
             species: self.state.species.iter().map(|x| *x as f64).collect(),
             time: self.state.time,
@@ -112,7 +112,7 @@ impl CrnSim for StoCrn {
         state
     }
 
-    fn simulate_history(&mut self, t: f64, _dt: f64) -> Result<Vec<State<f64>>, Error> {
+    pub fn simulate_history(&mut self, t: f64, _dt: f64) -> Result<Vec<State<f64>>, Error> {
         let mut result = Vec::new();
 
         let mut rates = vec![0.0; self.rxns.len()];
@@ -129,7 +129,7 @@ impl CrnSim for StoCrn {
         Ok(result)
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.state = self.init_state.clone();
     }
 }

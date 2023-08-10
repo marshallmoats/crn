@@ -6,7 +6,7 @@ use egui::{
     CentralPanel, Color32, Response, SidePanel, Ui,
 };
 
-use crn::{presets, state::State, CrnSim};
+use crn::{presets, state::State};
 
 const CRN_LIST: [(&str, &str, &str); 9] = [
     (presets::RPSLS, "Rock paper scissors lizard spock", "Same as the rock paper scissors CRN, but with two more players."),
@@ -79,8 +79,13 @@ impl LinePlot {
 
 struct CrnApp {
     lp: LinePlot,
-    crn: Box<dyn CrnSim>,
+    crn: CrnSim,
     state: CrnAppState,
+}
+
+enum CrnSim {
+    Sto(crn::StoCrn),
+    Det(crn::DetCrn),
 }
 
 struct CrnAppState {
@@ -107,13 +112,13 @@ impl App for CrnApp {
                 if ui.button("Parse").clicked() {
                     match self.state.crn_type {
                         CrnTypes::Sto => match crn::StoCrn::parse(&self.state.reactions) {
-                            Ok(crn) => self.crn = Box::new(crn),
+                            Ok(crn) => self.crn = CrnSim::Sto(crn),
                             Err(e) => {
                                 println!("Error: {:?}", e);
                             }
                         },
                         CrnTypes::Det => match crn::DetCrn::parse(&self.state.reactions) {
-                            Ok(crn) => self.crn = Box::new(crn),
+                            Ok(crn) => self.crn = CrnSim::Det(crn),
                             Err(e) => {
                                 println!("Error: {:?}", e);
                             }
@@ -139,31 +144,56 @@ impl App for CrnApp {
                             .clicked()
                         {
                             self.state.desc = desc;
-                            self.crn.reset();
+
+                            match self.crn {
+                                CrnSim::Sto(ref mut crn) => crn.reset(),
+                                CrnSim::Det(ref mut crn) => crn.reset(),
+                            }
 
                             match self.state.crn_type {
                                 CrnTypes::Sto => match crn::StoCrn::parse(&self.state.reactions) {
-                                    Ok(crn) => self.crn = Box::new(crn),
+                                    Ok(crn) => self.crn = CrnSim::Sto(crn),
                                     Err(e) => {
                                         println!("Error: {:?}", e);
                                     }
                                 },
                                 CrnTypes::Det => match crn::DetCrn::parse(&self.state.reactions) {
-                                    Ok(crn) => self.crn = Box::new(crn),
+                                    Ok(crn) => self.crn = CrnSim::Det(crn),
                                     Err(e) => {
                                         println!("Error: {:?}", e);
                                     }
                                 },
                             }
-                            self.state.reactions = self.crn.to_string();
+                            // :( I don't know how to avoid this after getting rid of the trait
+                            match self.crn {
+                                CrnSim::Sto(ref mut crn) => {
+                                    self.state.reactions = crn.to_string();
+                                }
+                                CrnSim::Det(ref mut crn) => {
+                                    self.state.reactions = crn.to_string();
+                                }
+                            }
                         }
                     });
                 });
             if ui.button("Resimulate").clicked() {
-                self.crn.reset();
-                let new_data = self
-                    .crn
-                    .simulate_history(self.state.simulation_length, self.state.dt);
+                match self.crn {
+                    CrnSim::Sto(ref mut crn) => crn.reset(),
+                    CrnSim::Det(ref mut crn) => crn.reset(),
+                }
+
+
+
+                let new_data = match self.crn {
+                    CrnSim::Sto(ref mut crn) => crn.simulate_history(
+                        self.state.simulation_length,
+                        self.state.dt
+                    ),
+                    CrnSim::Det(ref mut crn) => crn.simulate_history(
+                        self.state.simulation_length,
+                        self.state.dt
+                    ),
+                };
                 match new_data {
                     Ok(data) => {
                         self.lp.data = match self.state.relative {
@@ -174,18 +204,21 @@ impl App for CrnApp {
                     }
                     Err(s) => self.state.error = Some(s),
                 }
-                println!("{:?}", self.crn.state());
+                println!("{:?}", match &self.crn {
+                    CrnSim::Sto(crn) => crn.state(),
+                    CrnSim::Det(crn) => crn.state(),
+                });
             }
 
             if ui.button(self.state.crn_type.to_string()).clicked() {
                 match self.state.crn_type {
                     CrnTypes::Sto => {
                         self.state.crn_type = CrnTypes::Det;
-                        self.crn = Box::new(crn::DetCrn::parse(&self.state.reactions).unwrap());
+                        self.crn = CrnSim::Det(crn::DetCrn::parse(&self.state.reactions).unwrap());
                     }
                     CrnTypes::Det => {
                         self.state.crn_type = CrnTypes::Sto;
-                        self.crn = Box::new(crn::StoCrn::parse(&self.state.reactions).unwrap());
+                        self.crn = CrnSim::Sto(crn::StoCrn::parse(&self.state.reactions).unwrap());
                     }
                 }
             }
@@ -226,7 +259,7 @@ impl CrnApp {
                 dt: 0.001,
                 desc: CRN_LIST[0].2,
             },
-            crn: Box::new(crn::StoCrn::parse(presets::RPSLS).unwrap()),
+            crn: CrnSim::Sto(crn::StoCrn::parse(presets::RPSLS).unwrap()),
         }
     }
 }
