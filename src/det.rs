@@ -50,9 +50,3 @@ impl DetCrn {
         Ok(result)
     }
 }
-
-impl From<String> for DetCrn {
-    fn from(s: String) -> Self {
-        Self::parse(&s).unwrap()
-    }
-}

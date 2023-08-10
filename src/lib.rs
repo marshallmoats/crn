@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::str::FromStr;
 
 pub use det::DetCrn;
 use itertools::Itertools;
@@ -119,5 +120,15 @@ where
             ));
         }
         write!(f, "{}", result)
+    }
+}
+
+impl<T> From<String> for Crn<T>
+where
+    T: Clone + Default + FromStr,
+    <T as FromStr>::Err: std::fmt::Debug,
+{
+    fn from(s: String) -> Self {
+        Self::parse(&s).unwrap()
     }
 }

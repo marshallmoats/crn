@@ -2,8 +2,6 @@ use rand::Rng;
 
 use crate::{state::State, Crn};
 
-// const MAX_POINTS: usize = 100000;
-
 use std::fmt::Debug;
 
 use thiserror::Error;
@@ -24,7 +22,7 @@ pub type StoCrn = Crn<i32>;
 
 impl StoCrn {
     /// Simulate one reaction. Uses `rates` to avoid repeated allocations.
-    pub fn step(&mut self, rates: &mut [f64]) -> Result<(), Error> {
+    fn step(&mut self, rates: &mut [f64]) -> Result<(), Error> {
         let mut rate = 0.0;
 
         self.rxns.iter().enumerate().for_each(|(idx, rxn)| {
@@ -62,44 +60,6 @@ impl StoCrn {
         Ok(())
     }
 
-    // pub fn simulate_history(&mut self, steps: usize) -> Result<Vec<Vec<(f64, f64)>>, Error> {
-    //     let mut res = vec![Vec::with_capacity(steps.min(MAX_POINTS)); self.state.species.len()];
-
-    //     let mut rates = vec![0.0; self.rxns.len()];
-
-    //     if steps > MAX_POINTS {
-    //         let ratio = steps / MAX_POINTS;
-    //         // println!("ratio: {}", ratio);
-    //         for i in 0..steps {
-    //             if i % ratio == 0 {
-    //                 for (j, s) in self.state.species.iter().enumerate() {
-    //                     res[j].push((self.state.time, *s as f64));
-    //                 }
-    //             }
-    //             match self.step(&mut rates) {
-    //                 Ok(_) => {}
-    //                 Err(Error::TerminalState) => break,
-    //                 Err(e) => return Err(e),
-    //             }
-    //         }
-    //     } else {
-    //         for _ in 0..steps {
-    //             for (j, s) in self.state.species.iter().enumerate() {
-    //                 res[j].push((self.state.time, *s as f64));
-    //             }
-    //             match self.step(&mut rates) {
-    //                 Ok(_) => {}
-    //                 Err(Error::TerminalState) => break,
-    //                 Err(e) => return Err(e),
-    //             }
-    //         }
-    //     }
-
-    //     Ok(res)
-    // }
-}
-
-impl StoCrn {
     /// Simulates for a given amount of time. Returns a collection of individual species' history.
     pub fn simulate_history(&mut self, t: f64) -> Result<Vec<State<f64>>, Error> {
         let mut result = Vec::new();
@@ -116,11 +76,5 @@ impl StoCrn {
             });
         }
         Ok(result)
-    }
-}
-
-impl From<String> for StoCrn {
-    fn from(s: String) -> Self {
-        StoCrn::parse(&s).unwrap()
     }
 }
