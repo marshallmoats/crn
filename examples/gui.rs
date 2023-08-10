@@ -23,6 +23,11 @@ struct LinePlot {
     data: Vec<Vec<(f64, f64)>>,
 }
 
+enum CrnTypes {
+    Sto,
+    Det
+}
+
 impl LinePlot {
     const COLORS: [Color32; 16] = [
         Color32::RED,
@@ -67,12 +72,12 @@ struct CrnApp {
     state: CrnAppState,
 }
 
-#[derive(Default)]
 struct CrnAppState {
     relative: bool,
     simulation_length: f64,
     reactions: String,
     error: Option<crn::Error>,
+    crn_type: CrnTypes,
 }
 
 impl App for CrnApp {
@@ -123,6 +128,20 @@ impl App for CrnApp {
                     Err(s) => self.state.error = Some(s),
                 }
             }
+
+            if ui.button("toggle type").clicked() {
+                match self.state.crn_type {
+                    CrnTypes::Sto => {
+                        self.state.crn_type = CrnTypes::Det;
+                        self.crn = Box::new(crn::DetCrn::parse(&self.state.reactions).unwrap());
+                    }
+                    CrnTypes::Det => {
+                        self.state.crn_type = CrnTypes::Sto;
+                        self.crn = Box::new(crn::StoCrn::parse(&self.state.reactions).unwrap());
+                    }
+                }
+            }
+
             self.state
                 .error
                 .as_ref()
@@ -148,7 +167,8 @@ impl CrnApp {
                 relative: false,
                 simulation_length: 1.0,
                 reactions: "A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;".to_owned(),
-                ..Default::default()
+                error: None,
+                crn_type: CrnTypes::Sto,
             },
             crn: Box::new(crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap()),
         }
