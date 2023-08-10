@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use itertools::Itertools;
 
@@ -125,8 +125,8 @@ impl DetCrn {
     }
 }
 
-impl ToString for DetCrn {
-    fn to_string(&self) -> String {
+impl Display for DetCrn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let reactants_to_string = move |reactants: &HashMap<usize, i32>| -> String {
             if reactants.is_empty() {
                 return String::new();
@@ -163,8 +163,7 @@ impl ToString for DetCrn {
                 rxn.rate
             ));
         }
-
-        result
+        write!(f, "{}", result)
     }
 }
 

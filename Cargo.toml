@@ -1,6 +1,6 @@
 [package]
 name = "crn"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Marshall Moats <marshallmoats@gmail.com>"]
 homepage = "https://github.com/marshallmoats/crn"

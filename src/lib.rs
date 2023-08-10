@@ -2,6 +2,7 @@
 //! A library for simulating chemical reaction networks.
 
 use std::collections::HashMap;
+use std::fmt::Display;
 
 pub use det::DetCrn;
 pub use sto::Error;
@@ -161,7 +162,7 @@ where
     }
 }
 
-pub trait Crn: ToString {
+pub trait Crn: Display {
     fn reactions(&self) -> &[Reaction];
     fn state(&self) -> State<f64>;
     // fn simulate(&mut self, t: f64, dt: f64) -> Result<State<T>, Error>;

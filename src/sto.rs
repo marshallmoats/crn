@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use rand::Rng;
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{
     parse::{parse_counts, parse_reactions, ParseError},
@@ -179,8 +179,8 @@ impl StoCrn {
     }
 }
 
-impl ToString for StoCrn {
-    fn to_string(&self) -> String {
+impl Display for StoCrn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let reactants_to_string = move |reactants: &HashMap<usize, i32>| -> String {
             if reactants.is_empty() {
                 return String::new();
@@ -218,7 +218,7 @@ impl ToString for StoCrn {
             ));
         }
 
-        result
+        write!(f, "{}", result)
     }
 }
 
