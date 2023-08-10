@@ -13,6 +13,7 @@ use std::fmt::Debug;
 
 use thiserror::Error;
 
+/// A simulation can fail because no more reactions are possible, or because of numerical instability.
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("CRN has reached terminal state")]
@@ -21,6 +22,7 @@ pub enum Error {
     InsufficientPrecision,
 }
 
+/// A stochastic CRN. This is simulated using the Gillespie algorithm. Stochastic CRNs are essentially a type of continuous-time Markov chain.
 #[derive(Clone, Default, Debug, PartialEq)]
 pub struct StoCrn {
     pub state: State<i32>,

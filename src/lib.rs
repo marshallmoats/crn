@@ -13,6 +13,7 @@ pub mod parse;
 pub mod presets;
 pub mod sto;
 
+/// A chemical reaction, with a rate parameter.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Reaction {
     reactants: HashMap<usize, i32>,
@@ -43,6 +44,7 @@ impl Reaction {
     }
 }
 
+/// A state of a CRN. StoCrn uses integers, DetCrn uses floats.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct State<T> {
     pub species: Vec<T>,
@@ -162,6 +164,7 @@ where
     }
 }
 
+/// The essential behavior shared by stochastic and deterministic CRNs.
 pub trait Crn: Display {
     fn reactions(&self) -> &[Reaction];
     fn state(&self) -> State<f64>;

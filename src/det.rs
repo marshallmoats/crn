@@ -9,6 +9,7 @@ use crate::{
 
 const MAX_POINTS: usize = 100000;
 
+/// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the number of species are scaled to infinity.
 #[derive(Default, Clone)]
 pub struct DetCrn {
     pub rxns: Vec<Reaction>,
