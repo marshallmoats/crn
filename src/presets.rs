@@ -1,3 +1,4 @@
+/// The molecules play rock paper scissors. The winner transforms the loser into a copy of itself.
 pub const ROCK_PAPER_SCISSORS: &str = "
     r=50;
     p=50;
@@ -6,6 +7,7 @@ pub const ROCK_PAPER_SCISSORS: &str = "
     p+s->2s;
     s+r->2r;
     ";
+/// A is the prey and B is the predator.
 pub const PREDATOR_PREY: &str = "
     a=100;
     b=100;
@@ -13,13 +15,14 @@ pub const PREDATOR_PREY: &str = "
     a->2a;
     b->;
     ";
+/// Polya's urn. Draw a marble from the urn, then put two marbles of the same color back in.
 pub const POLYA: &str = "
     A = 1;
     B = 1;
     A -> 2A;
     B -> 2B;
     ";
-// rock paper scissors lizard spock
+/// Same as the rock paper scissors CRN, but with two more players.
 pub const RPSLS: &str = "
     a = 100;
     b = 100;
@@ -37,12 +40,14 @@ pub const RPSLS: &str = "
     d+b->2d;
     e+c->2e;
     ";
+/// Determines which of A and B is more abundant.
 pub const MAJORITY: &str = "
     A = 30;
     B = 20;
     2A + B -> 3A;
     A + 2B -> 3B;
     ";
+/// The majority CRN, but with catalysts that transform into one another.
 pub const MAJORITY_CATALYZED: &str = "
     A = 5120;
     B = 4880;
@@ -53,6 +58,7 @@ pub const MAJORITY_CATALYZED: &str = "
     C -> D : 1000000000;
     D -> C : 1000000000;
     ";
+/// Approximately calculates the product of A and B. A deterministic simulation will approach it asymptotically.
 pub const MULTIPLY: &str = "
     A = 30;
     B = 20;
@@ -60,6 +66,7 @@ pub const MULTIPLY: &str = "
     A + B -> A + B + C;
     C ->;
     ";
+/// Calculates the product with some random perturbations of catalysts.
 pub const MULTIPLY_CATALYZED: &str = "
     A = 30;
     B = 20;
@@ -71,6 +78,7 @@ pub const MULTIPLY_CATALYZED: &str = "
     D -> E : 1000000000;
     E -> D : 1000000000;
     ";
+/// A basic CRN with two reactions that reach equilibrium.
 pub const EQUILIBRIUM: &str = "
     A = 10000;
     B = 10000;
@@ -79,10 +87,11 @@ pub const EQUILIBRIUM: &str = "
     A + 2B -> 4C + 3D;
     4C + 3D -> A + 2B;
     ";
+/// Honestly, I don't remember what this is supposed to do and I don't remember where I found it.
 pub const OTHER: &str = "
-    a=5;
-    b=4;
-    c=10;
+    a=50;
+    b=40;
+    c=100;
     ga=1;
     gb=1;
     gc=1;

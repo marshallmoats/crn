@@ -226,9 +226,7 @@ impl CrnApp {
                 dt: 0.001,
                 desc: CRN_LIST[0].2,
             },
-            crn: Box::new(
-                crn::StoCrn::parse(presets::RPSLS).unwrap(),
-            ),
+            crn: Box::new(crn::StoCrn::parse(presets::RPSLS).unwrap()),
         }
     }
 }
