@@ -7,11 +7,11 @@ use egui::{
 use crn::{presets, Crn, State};
 
 const CRN_LIST: [(&str, &str); 9] = [
+    (presets::RPSLS, "Rock paper scissors lizard spock"),
     (presets::MULTIPLY_CATALYZED, "Multiply catalyzed"),
     (presets::ROCK_PAPER_SCISSORS, "Rock paper scissors"),
     (presets::PREDATOR_PREY, "Predator prey"),
     (presets::POLYA, "Polya"),
-    (presets::RPSLS, "RPSLS"),
     (presets::MAJORITY, "Majority"),
     (presets::MAJORITY_CATALYZED, "Majority catalyzed"),
     (presets::MULTIPLY, "Multiply"),
@@ -196,12 +196,12 @@ impl CrnApp {
             state: CrnAppState {
                 relative: false,
                 simulation_length: 1.0,
-                reactions: "A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;".to_owned(),
+                reactions: presets::RPSLS.to_string(),
                 error: None,
                 crn_type: CrnTypes::Sto,
             },
             crn: Box::new(
-                crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap(),
+                crn::StoCrn::parse(presets::RPSLS).unwrap(),
             ),
         }
     }
