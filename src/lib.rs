@@ -161,9 +161,9 @@ where
     }
 }
 
-pub trait Crn: ToString
-{
+pub trait Crn: ToString {
     fn reactions(&self) -> &[Reaction];
+    fn state(&self) -> State<f64>;
     // fn simulate(&mut self, t: f64, dt: f64) -> Result<State<T>, Error>;
     fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, Error>;
     fn reset(&mut self);

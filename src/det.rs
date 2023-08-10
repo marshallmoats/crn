@@ -173,12 +173,17 @@ impl Crn for DetCrn {
         &self.rxns
     }
 
+    fn state(&self) -> State<f64> {
+        self.state.clone()
+    }
+
     fn simulate_history(&mut self, t: f64, dt: f64) -> Result<Vec<State<f64>>, crate::Error> {
         let steps = (t / dt).ceil() as usize;
         let mut species: Vec<State<f64>> = Vec::with_capacity(steps);
         for _ in 0..steps {
             species.push(self.state.clone());
             self.step(dt);
+            println!("{:?}", self.state);
         }
         Ok(species)
     }

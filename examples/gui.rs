@@ -25,7 +25,7 @@ struct LinePlot {
 
 enum CrnTypes {
     Sto,
-    Det
+    Det,
 }
 
 impl LinePlot {
@@ -92,11 +92,19 @@ impl App for CrnApp {
                 ui.code_editor(&mut self.state.reactions);
 
                 if ui.button("Parse").clicked() {
-                    match crn::StoCrn::parse(&self.state.reactions) {
-                        Ok(crn) => self.crn = Box::new(crn),
-                        Err(e) => {
-                            println!("Error: {:?}", e);
-                        }
+                    match self.state.crn_type {
+                        CrnTypes::Sto => match crn::StoCrn::parse(&self.state.reactions) {
+                            Ok(crn) => self.crn = Box::new(crn),
+                            Err(e) => {
+                                println!("Error: {:?}", e);
+                            }
+                        },
+                        CrnTypes::Det => match crn::DetCrn::parse(&self.state.reactions) {
+                            Ok(crn) => self.crn = Box::new(crn),
+                            Err(e) => {
+                                println!("Error: {:?}", e);
+                            }
+                        },
                     }
                 }
             });
@@ -108,10 +116,29 @@ impl App for CrnApp {
                 .show_ui(ui, |ui| {
                     CRN_LIST.iter().for_each(|(crn, name)| {
                         if ui
-                            .selectable_value(&mut self.state.reactions, crn.to_string(), name.to_owned())
+                            .selectable_value(
+                                &mut self.state.reactions,
+                                crn.to_string(),
+                                name.to_owned(),
+                            )
                             .clicked()
                         {
                             self.crn.reset();
+
+                            match self.state.crn_type {
+                                CrnTypes::Sto => match crn::StoCrn::parse(&self.state.reactions) {
+                                    Ok(crn) => self.crn = Box::new(crn),
+                                    Err(e) => {
+                                        println!("Error: {:?}", e);
+                                    }
+                                },
+                                CrnTypes::Det => match crn::DetCrn::parse(&self.state.reactions) {
+                                    Ok(crn) => self.crn = Box::new(crn),
+                                    Err(e) => {
+                                        println!("Error: {:?}", e);
+                                    }
+                                },
+                            }
                             self.state.reactions = self.crn.to_string();
                         }
                     });
@@ -119,7 +146,9 @@ impl App for CrnApp {
             if ui.button("Resimulate").clicked() {
                 // println!("{:?}", self.crn.names);
                 self.crn.reset();
-                let new_data = self.crn.simulate_history(self.state.simulation_length, 0.001);
+                let new_data = self
+                    .crn
+                    .simulate_history(self.state.simulation_length, 0.001);
                 match new_data {
                     Ok(data) => {
                         self.lp.data = transpose(data);
@@ -127,6 +156,7 @@ impl App for CrnApp {
                     }
                     Err(s) => self.state.error = Some(s),
                 }
+                println!("{:?}", self.crn.state());
             }
 
             if ui.button("toggle type").clicked() {
@@ -170,7 +200,9 @@ impl CrnApp {
                 error: None,
                 crn_type: CrnTypes::Sto,
             },
-            crn: Box::new(crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap()),
+            crn: Box::new(
+                crn::StoCrn::parse("A = 50; B = 50; 2A + B -> 3A; A + 2B -> 3B;").unwrap(),
+            ),
         }
     }
 }

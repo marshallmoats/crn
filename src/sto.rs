@@ -227,13 +227,21 @@ impl Crn for StoCrn {
         &self.rxns
     }
 
+    fn state(&self) -> State<f64> {
+        let state = State {
+            species: self.state.species.iter().map(|x| *x as f64).collect(),
+            time: self.state.time,
+        };
+        state
+    }
+
     fn simulate_history(&mut self, t: f64, dt: f64) -> std::result::Result<Vec<State<f64>>, Error> {
         let mut result = Vec::with_capacity((t / dt) as usize);
 
         let mut rates = vec![0.0; self.rxns.len()];
         while self.state.time < t {
             if self.step(&mut rates).is_err() {
-                break
+                break;
             }
             let species = self.state.species.iter().map(|x| *x as f64).collect();
             result.push(State {
