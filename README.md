@@ -30,4 +30,6 @@ Try the examples for a graphical demonstration!
 
 `cargo run --release --example gui`
 
+Note: deterministic simulations are unstable with large numbers. Try scaling down all initial amounts (can be noninteger, unlike stochastic simulations) if you're having issues.
+
 ![gui demo](media/1691519892.png)
