@@ -1,6 +1,6 @@
 # crn
 
-![Crates.io](https://img.shields.io/crates/v/crn)
+[![Crates.io](https://img.shields.io/crates/v/crn.svg)](https://crates.io/crates/crn)
 [![Documentation](https://docs.rs/crn/badge.svg)](https://docs.rs/crn)
 
 `crn` can simulate both stochastic and deterministic CRNs with `StoCrn` and `DetCrn`, respectively.
