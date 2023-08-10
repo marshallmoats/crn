@@ -2,7 +2,7 @@ use crate::{Crn, State};
 
 const MAX_POINTS: usize = 100000;
 
-/// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the number of species are scaled to infinity.
+/// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the amounts of each species are scaled to infinity.
 pub type DetCrn = Crn<f64>;
 
 impl DetCrn {
