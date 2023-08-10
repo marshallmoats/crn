@@ -67,6 +67,16 @@ pub struct Crn<T> {
     pub names: bimap::BiHashMap<usize, String>,
 }
 
+impl<T> Crn<T>
+where
+    T: Clone,
+{
+    /// Resets the CRN to its initial state.
+    pub fn reset(&mut self) {
+        self.state = self.init_state.clone();
+    }
+}
+
 impl<T> Display for Crn<T>
 where
     T: Display,

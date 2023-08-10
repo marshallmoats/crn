@@ -182,17 +182,11 @@ impl App for CrnApp {
                     CrnSim::Det(ref mut crn) => crn.reset(),
                 }
 
-
-
                 let new_data = match self.crn {
-                    CrnSim::Sto(ref mut crn) => crn.simulate_history(
-                        self.state.simulation_length,
-                        self.state.dt
-                    ),
-                    CrnSim::Det(ref mut crn) => crn.simulate_history(
-                        self.state.simulation_length,
-                        self.state.dt
-                    ),
+                    CrnSim::Sto(ref mut crn) => crn.simulate_history(self.state.simulation_length),
+                    CrnSim::Det(ref mut crn) => {
+                        crn.simulate_history(self.state.simulation_length, self.state.dt)
+                    }
                 };
                 match new_data {
                     Ok(data) => {
@@ -204,10 +198,10 @@ impl App for CrnApp {
                     }
                     Err(s) => self.state.error = Some(s),
                 }
-                println!("{:?}", match &self.crn {
-                    CrnSim::Sto(crn) => crn.state(),
-                    CrnSim::Det(crn) => crn.state(),
-                });
+                match &self.crn {
+                    CrnSim::Sto(crn) => println!("{:?}", crn.state),
+                    CrnSim::Det(crn) => println!("{:?}", crn.state),
+                }
             }
 
             if ui.button(self.state.crn_type.to_string()).clicked() {
