@@ -87,6 +87,21 @@ pub const EQUILIBRIUM: &str = "
     A + 2B -> 4C + 3D;
     4C + 3D -> A + 2B;
     ";
+/// Looks cool.
+pub const CHAIN: &str = "
+    A = 100;
+    A -> B;
+    B -> C;
+    C -> D;
+    D -> E;
+    E -> F;
+    F -> G;
+    G -> H;
+    H -> I;
+    I -> J;
+    J -> K;
+    K -> L;
+    ";
 /// Honestly, I don't remember what this is supposed to do and I don't remember where I found it.
 pub const OTHER: &str = "
     a=50;
