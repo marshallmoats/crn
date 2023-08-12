@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use eframe::App;
+use eframe::{App, egui};
 use egui::{
     plot::{Legend, Line, Plot},
     CentralPanel, Color32, Response, SidePanel, Ui,
