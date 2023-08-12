@@ -78,3 +78,33 @@ impl StoCrn {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::StoCrn;
+
+    #[test]
+    fn test() {
+        const N: i32 = 100;
+        let mut crn = StoCrn::parse(&format!("A = {N}; A -> ;")).unwrap();
+        let mut rates = vec![0.0; crn.rxns.len()];
+        for i in (0..N).rev() {
+            crn.step(&mut rates).unwrap();
+            assert_eq!(crn.state.species[0], i);
+        }
+    }
+
+    #[test]
+    fn test2() {
+        let mut crn = StoCrn::parse("A = 1; B = 1; A + B -> C; C -> A + B;").unwrap();
+        let mut rates = vec![0.0; crn.rxns.len()];
+        crn.step(&mut rates).unwrap();
+        assert_eq!(crn.state.species[0], 0);
+        assert_eq!(crn.state.species[1], 0);
+        assert_eq!(crn.state.species[2], 1);
+        crn.step(&mut rates).unwrap();
+        assert_eq!(crn.state.species[0], 1);
+        assert_eq!(crn.state.species[1], 1);
+        assert_eq!(crn.state.species[2], 0);
+    }
+}

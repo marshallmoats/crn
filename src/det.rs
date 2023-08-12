@@ -13,7 +13,7 @@ impl DetCrn {
         let k3 = (&self.state + &(&k2 * (dt / 2.0))).species_rates(&self.rxns);
         let k4 = (&self.state + &(&k3 * dt)).species_rates(&self.rxns);
 
-        let delta = &(&(&k1 + &(&k2 * 3.0)) + &(&(&k3 * 3.0) + &k4)) * (dt / 6.0);
+        let delta = &(&(&k1 + &(&k2 * 2.0)) + &(&(&k3 * 2.0) + &k4)) * (dt / 6.0);
 
         self.state = &self.state + &delta;
 
@@ -48,5 +48,19 @@ impl DetCrn {
             self.step(dt);
         }
         Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use more_asserts::assert_lt;
+
+    use crate::DetCrn;
+
+    #[test]
+    fn test() {
+        let mut crn = DetCrn::parse("A = 1; A -> ;").unwrap();
+        crn.simulate_history(1.0, 0.001).unwrap();
+        assert_lt!(crn.state.species[0], 0.001);
     }
 }
