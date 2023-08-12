@@ -53,14 +53,24 @@ impl DetCrn {
 
 #[cfg(test)]
 mod tests {
+    use approx::abs_diff_eq;
     use more_asserts::assert_lt;
 
     use crate::DetCrn;
 
     #[test]
     fn test() {
+        const T: f64 = 1.0;
         let mut crn = DetCrn::parse("A = 1; A -> ;").unwrap();
-        crn.simulate_history(1.0, 0.001).unwrap();
-        assert_lt!(crn.state.species[0], 0.001);
+        crn.simulate_history(T, 0.001).unwrap();
+        assert_lt!((crn.state.species[0] - (-T).exp()).abs(), 0.001);
+    }
+
+    #[test]
+    fn test2() {
+        const T: f64 = 1000.0;
+        let mut crn = DetCrn::parse("A = 0; -> A;").unwrap();
+        crn.simulate_history(T, 0.001).unwrap();
+        abs_diff_eq!(crn.state.species[0], T);
     }
 }

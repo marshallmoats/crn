@@ -10,6 +10,7 @@ categories = ["simulation", "science", "mathematics", "algorithms"]
 license = "MIT"
 
 [dependencies]
+approx = "0.5.1"
 bimap = "0.6.3"
 eframe = "0.22.0"
 itertools = "0.11.0"
