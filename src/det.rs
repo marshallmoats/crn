@@ -67,9 +67,25 @@ mod tests {
 
     #[test]
     fn test2() {
-        const T: f64 = 1000.0;
+        const T: f64 = 10.0;
         let mut crn = DetCrn::parse("A = 0; -> A;").unwrap();
         crn.simulate_history(T, 0.001).unwrap();
         assert_abs_diff_eq!(crn.state.species[0], T, epsilon = 0.001);
+    }
+
+    #[test]
+    fn test3() {
+        const T: f64 = 10.0;
+        let mut crn = DetCrn::parse("A = 1; A -> 2A;").unwrap();
+        crn.simulate_history(T, 0.001).unwrap();
+        assert_abs_diff_eq!(crn.state.species[0], T.exp(), epsilon = 0.001);
+    }
+
+    #[test]
+    fn test4() {
+        const T: f64 = 10.0;
+        let mut crn = DetCrn::parse("A = 1; A -> B;").unwrap();
+        crn.simulate_history(T, 0.001).unwrap();
+        assert_abs_diff_eq!(crn.state.species[1], 1.0 - (-T).exp(), epsilon = 0.001);
     }
 }

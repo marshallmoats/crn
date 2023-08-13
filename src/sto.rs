@@ -107,4 +107,15 @@ mod tests {
         assert_eq!(crn.state.species[1], 1);
         assert_eq!(crn.state.species[2], 0);
     }
+
+    #[test]
+    fn test3() {
+        let mut crn = StoCrn::parse("A = 16; 2A -> B; 2B -> C; 2C -> D; 2D -> E;").unwrap();
+        crn.steps(15).unwrap();
+        assert_eq!(crn.state.species[0], 0);
+        assert_eq!(crn.state.species[1], 0);
+        assert_eq!(crn.state.species[2], 0);
+        assert_eq!(crn.state.species[3], 0);
+        assert_eq!(crn.state.species[4], 1);
+    }
 }
