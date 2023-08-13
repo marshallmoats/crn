@@ -17,8 +17,6 @@ use crate::{state::State, Crn, Reaction};
 pub enum ParseError {
     /// Species amount was defined twice.
     DuplicateDefinition(String),
-    /// Species name was used in a reaction but not defined.
-    InvalidSpecies,
 }
 
 fn species_name(input: &str) -> IResult<&str, &str> {
