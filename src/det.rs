@@ -1,5 +1,6 @@
 use crate::{Crn, State};
 
+/// The maximum number of points to return from a simulation.
 const MAX_POINTS: usize = 100000;
 
 /// A deterministic CRN. In a sense this is the "limiting" behavior of a stochastic CRN as the amounts of each species are scaled to infinity.

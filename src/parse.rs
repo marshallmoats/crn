@@ -19,6 +19,7 @@ pub enum ParseError {
     DuplicateDefinition(String),
 }
 
+/// Parse the name of a species.
 fn species_name(input: &str) -> IResult<&str, &str> {
     delimited(
         multispace0,
@@ -27,6 +28,7 @@ fn species_name(input: &str) -> IResult<&str, &str> {
     )(input)
 }
 
+/// Parse a species amount definition.
 fn parse_count(input: &str) -> IResult<&str, (&str, &str)> {
     delimited(
         multispace0,
@@ -42,14 +44,17 @@ fn parse_count(input: &str) -> IResult<&str, (&str, &str)> {
     )(input)
 }
 
+/// Parse multiple species amount definitions.
 fn parse_counts(input: &str) -> IResult<&str, Vec<(&str, &str)>> {
     many0(parse_count)(input)
 }
 
+/// Parse a species with an optional stoichiometric coefficient.
 fn parse_reactant(input: &str) -> IResult<&str, (&str, &str)> {
     delimited(multispace0, pair(digit0, species_name), multispace0)(input)
 }
 
+/// Parse multiple species with optional stoichiometric coefficients.
 fn parse_reactants(input: &str) -> IResult<&str, Vec<(&str, &str)>> {
     delimited(
         multispace0,
@@ -61,11 +66,13 @@ fn parse_reactants(input: &str) -> IResult<&str, Vec<(&str, &str)>> {
     )(input)
 }
 
+/// Result of parsing a reaction.
 type ReactionTokens<'a> = (
     (Vec<(&'a str, &'a str)>, Vec<(&'a str, &'a str)>),
     Option<f64>,
 );
 
+/// Parse a reaction with an optional rate parameter.
 fn parse_reaction(input: &str) -> IResult<&str, ReactionTokens> {
     terminated(
         pair(
@@ -76,6 +83,7 @@ fn parse_reaction(input: &str) -> IResult<&str, ReactionTokens> {
     )(input)
 }
 
+/// Parse multiple reactions.
 fn parse_reactions(input: &str) -> IResult<&str, Vec<ReactionTokens>> {
     many0(parse_reaction)(input)
 }

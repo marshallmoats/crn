@@ -2,6 +2,7 @@
 //! A library for simulating chemical reaction networks.
 
 #![warn(missing_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
 
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -27,14 +28,19 @@ pub mod sto;
 /// A chemical reaction, with a rate parameter.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Reaction {
-    reactants: HashMap<usize, i32>,
-    products: HashMap<usize, i32>,
-    delta: HashMap<usize, i32>,
-    rate: f64,
+    /// Reactants and their stoichiometric coefficients.
+    pub reactants: HashMap<usize, i32>,
+    /// Products and their stoichiometric coefficients.
+    pub products: HashMap<usize, i32>,
+    /// The change in a species' amount when this reaction occurs.
+    pub delta: HashMap<usize, i32>,
+    /// The rate parameter of this reaction.
+    pub rate: f64,
 }
 
 impl Reaction {
-    fn new(reactants: HashMap<usize, i32>, products: HashMap<usize, i32>, rate: f64) -> Self {
+    /// Create a new reaction from reactants, products, and a rate parameter.
+    pub fn new(reactants: HashMap<usize, i32>, products: HashMap<usize, i32>, rate: f64) -> Self {
         Self {
             reactants: reactants.clone(),
             delta: {
